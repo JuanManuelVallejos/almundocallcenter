@@ -1,5 +1,7 @@
 package models;
 
+import exceptions.NullDispatcherException;
+
 import java.util.Random;
 
 public class Call extends Thread {
@@ -18,10 +20,16 @@ public class Call extends Thread {
      *                   a uno de sus empleados.
      * @param identificador Debe ser un numero univoco dentro del set de llamadas.
      */
-    public Call(Dispatcher dispatcher, int identificador){
+    public Call(Dispatcher dispatcher, int identificador) throws NullDispatcherException{
+        this.validateDispatcher(dispatcher);
         this.dispatcher = dispatcher;
         this.calculateTime();
         this.identificador = identificador;
+    }
+
+    private void validateDispatcher(Dispatcher dispatcher) throws NullDispatcherException{
+        if(dispatcher == null)
+            throw new NullDispatcherException();
     }
 
     /**

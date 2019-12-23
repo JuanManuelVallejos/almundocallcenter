@@ -1,5 +1,7 @@
 package models;
 
+import exceptions.NullCargoException;
+
 import java.util.concurrent.Semaphore;
 
 public class Empleado implements Runnable{
@@ -12,9 +14,15 @@ public class Empleado implements Runnable{
      * La clase Empleado es la encargada de llevar a cabo la llamada.
      * @param cargo Es obligatorio y fundamental para saber en que orden ser llamado.
      */
-    public Empleado(CARGO cargo) {
+    public Empleado(CARGO cargo) throws NullCargoException{
+        this.validateCargo(cargo);
         this.cargo = cargo;
         this.semaphore = new Semaphore(1);
+    }
+
+    private void validateCargo(CARGO cargo) throws NullCargoException{
+        if(cargo == null)
+            throw new NullCargoException();
     }
 
     /**

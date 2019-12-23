@@ -1,5 +1,8 @@
 package models;
 
+import exceptions.EmptyOrNullEmpleadosExeption;
+import exceptions.InvalidNumberOfThreadsException;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
@@ -19,13 +22,21 @@ public class Dispatcher implements Runnable {
     /**
      * La clase Dispatcher es la encargada de derivar las llamadas entrantes a sus
      * empleados para su correcta ejecucion.
-     * @param empleados La lista de empleados debe tener a cada uno de ellos con un cargo .
+     * @param empleados La lista de empleados no puede estar vacia y debe tener a cada uno de ellos con un cargo .
      * @param threadsConcurrentes La cantidad de hilos que debe soportar ejecutandose concurrentemente.
      */
-    public Dispatcher(List<Empleado> empleados, int threadsConcurrentes){
+    public Dispatcher(List<Empleado> empleados, int threadsConcurrentes) throws EmptyOrNullEmpleadosExeption, InvalidNumberOfThreadsException{
+        this.validateArgs(empleados, threadsConcurrentes);
         this.llamadasEntrantes = new ConcurrentLinkedDeque<>();
         this.empleados = empleados;
         this.executorService = Executors.newFixedThreadPool(threadsConcurrentes);
+    }
+
+    private void validateArgs(List<Empleado> empleados, int threadsConcurrentes) throws EmptyOrNullEmpleadosExeption, InvalidNumberOfThreadsException{
+        if(empleados == null || empleados.isEmpty())
+            throw new EmptyOrNullEmpleadosExeption();
+        if(threadsConcurrentes <= 0)
+            throw new InvalidNumberOfThreadsException();
     }
 
     /**

@@ -1,7 +1,12 @@
+import exceptions.EmptyOrNullEmpleadosExeption;
+import exceptions.InvalidNumberOfThreadsException;
+import exceptions.NullCargoException;
+import exceptions.NullDispatcherException;
 import models.CARGO;
 import models.Call;
 import models.Dispatcher;
 import models.Empleado;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -10,15 +15,61 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DispatcherTest {
+class DispatcherTest {
 
     @Test
-    public void testDiezLlamadasCon10Hilos(){
+    void test10LlamadasCon10Hilos() throws Exception{
+        templateXLLamadasConYHilos(10,10);
+    }
+
+    @Test
+    void test20LlamadasCon10Hilos() throws Exception{
+        templateXLLamadasConYHilos(20,10);
+    }
+
+    @Test
+    void testDispatcherExitoso() throws NullCargoException, EmptyOrNullEmpleadosExeption, InvalidNumberOfThreadsException {
+        List<Empleado> empleados = buildEmpleados(1,0,0);
+        Dispatcher dispatcher = new Dispatcher(empleados, 1);
+    }
+
+    @Test
+    void testDispatcherSinEmpleados(){
+        List<Empleado> empleados = new ArrayList<>();
+        Assertions.assertThrows(EmptyOrNullEmpleadosExeption.class, () -> {
+            new Dispatcher(empleados, 1);
+        });
+    }
+
+    @Test
+    void testDispatcherConEmpleadosNull(){
+        Assertions.assertThrows(EmptyOrNullEmpleadosExeption.class, () -> {
+            new Dispatcher(null, 1);
+        });
+    }
+
+    @Test
+    void testDispatcherConCeroHilos() throws NullCargoException{
+        List<Empleado> empleados = this.buildEmpleados(1,1,1);
+        Assertions.assertThrows(InvalidNumberOfThreadsException.class, () -> {
+            new Dispatcher(empleados, 0);
+        });
+    }
+
+    @Test
+    void testDispatcherConHilosNegativos() throws NullCargoException{
+        List<Empleado> empleados = this.buildEmpleados(1,1,1);
+        Assertions.assertThrows(InvalidNumberOfThreadsException.class, () -> {
+            new Dispatcher(empleados, -5);
+        });
+    }
+
+    private void templateXLLamadasConYHilos(int cantidadLlamadas, int cantidadDeHilos) throws Exception{
         List<Empleado> empleados = buildEmpleados(4,3,3);
 
-        Dispatcher dispatcher = new Dispatcher(empleados,10);
+        Dispatcher dispatcher = new Dispatcher(empleados,cantidadDeHilos);
 
-        List<Call> calls = buildNCalls(dispatcher, 10);
+        List<Call> calls = buildNCalls(dispatcher, cantidadLlamadas);
         for(Call call : calls){
             call.start();
         }
@@ -36,7 +87,7 @@ public class DispatcherTest {
         assertTrue(calls.stream().allMatch(llamada -> llamada.getLlamadaExitosa()));
     }
 
-    private List<Call> buildNCalls(Dispatcher dispatcher, int cantidad){
+    private List<Call> buildNCalls(Dispatcher dispatcher, int cantidad) throws NullDispatcherException {
         List<Call> calls = new ArrayList<>();
         for (int i = 0 ; i< cantidad; i++){
             Call call = new Call(dispatcher, i+1);
@@ -45,7 +96,7 @@ public class DispatcherTest {
         return calls;
     }
 
-    private List<Empleado> buildEmpleados(Integer cantidadOperarios, Integer cantidadSupervisores, Integer cantidadDirectores){
+    private List<Empleado> buildEmpleados(Integer cantidadOperarios, Integer cantidadSupervisores, Integer cantidadDirectores) throws NullCargoException {
         List<Empleado> empleados = new ArrayList<>();
 
         Map<CARGO, Integer> mapCargosCantidades = new HashMap<CARGO, Integer>() {{
